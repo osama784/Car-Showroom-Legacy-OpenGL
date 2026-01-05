@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Users\LENOVO\OneDrive\Desktop\OpenGL\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\LENOVO\OneDrive\Desktop\OpenGL\library;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)library;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>C:\Users\alaag\OneDrive\Desktop\OpenGL\include;$(IncludePath)</IncludePath>
@@ -143,12 +143,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="GraphicsHelper.cpp" />
+    <ClCompile Include="ShowRoomHelper.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="texture.cpp" />
+    <ClCompile Include="WorldHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GraphicsHelper.h" />
+    <ClInclude Include="ShowRoomHelper.h" />
+    <ClInclude Include="WorldHelper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

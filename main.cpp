@@ -6,7 +6,8 @@
 #include<iostream>
 #include<ctime>
 #include "texture.h"
-#include "GraphicsHelper.h"
+#include "ShowRoomHelper.h"
+#include "WorldHelper.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -25,8 +26,12 @@ bool	fullscreen = FALSE;	// Fullscreen Flag Set To Fullscreen Mode By Default
 float cameraX = 0.0f, cameraY = 5.0f, cameraZ = 15.0f;
 float cameraYaw = 0.0f;     // Horizontal rotation (left/right)
 float cameraPitch = 0.0f;   // Vertical rotation (up/down)
-float cameraSpeed = 0.2f;
+float cameraSpeed = 0.02f;
 float cameraRotateSpeed = 0.05f;
+
+
+// initialize world
+WorldHelper world;
 
 // texture variables 
 GLuint wallTexture, floorTexture, ceilingTexture;
@@ -37,50 +42,6 @@ float roomHeight = 10.0f;
 float roomDepth = 30.0f;
 
 LRESULT	CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);	// Declaration For WndProc
-
-
-GLuint LoadPNGTexture(const char* filename) {
-	int width, height, channels;
-	stbi_set_flip_vertically_on_load(true);
-
-
-	unsigned char* image = stbi_load(filename, &width, &height, &channels, STBI_rgb_alpha);
-
-
-	if (!image) {
-		std::cout << "Failed to load texture: " << filename << std::endl;
-		return 0;
-	}
-
-	GLuint textureID;
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_2D, textureID);
-
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
-		GL_RGBA, GL_UNSIGNED_BYTE, image);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	stbi_image_free(image);
-	stbi__vertically_flip_on_load;
-	return textureID;
-}
-
-//void drawGrass() {
-//	glColor3f(1.0f, 1.0f, 1.0f);
-//	glEnable(GL_TEXTURE_2D);
-//	glBindTexture(GL_TEXTURE_2D, grass);
-//
-//	glBegin(GL_QUADS);
-//	glTexCoord2d(0, 500);   glVertex3f(-1000, 0, -1000);
-//	glTexCoord2d(500, 500); glVertex3f(1000, 0, -1000);
-//	glTexCoord2d(500, 0);   glVertex3f(1000, 0, 1000);
-//	glTexCoord2d(0, 0);     glVertex3f(-1000, 0, 1000);
-//	glEnd();
-//
-//}
 
 GLvoid ReSizeGLScene(GLsizei width, GLsizei height)		// Resize And Initialize The GL Window
 {
@@ -111,11 +72,15 @@ int InitGL(GLvoid)										// All Setup For OpenGL Goes Here
 	glDepthFunc(GL_LEQUAL);								// The Type Of Depth Testing To Do
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);	// Really Nice Perspective Calculations
 
+	// Enable blending for transparency
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	glEnable(GL_TEXTURE_2D);
 	// Load showroom textures
-	wallTexture = GraphicsHelper::LoadTexture("wall.jpg");      
-	floorTexture = GraphicsHelper::LoadTexture("floor.png");
-	ceilingTexture = GraphicsHelper::LoadTexture("wall.jpg");
+	wallTexture = ShowRoomHelper::LoadTexture("glass1.jpg");      
+	floorTexture = ShowRoomHelper::LoadTexture("floor.png");
+	ceilingTexture = ShowRoomHelper::LoadTexture("glass1.jpg");
 	
 	return TRUE;										// Initialization Went OK
 }
@@ -135,11 +100,13 @@ int DrawGLScene(GLvoid)                                    // Here's Where We Do
 	gluLookAt(cameraX, cameraY, cameraZ,                    // Camera position
 		cameraX + lookX, cameraY + lookY, cameraZ + lookZ,  // Look at point
 		0.0f, 1.0f, 0.0f);
+
+	world.drawOutsideWorld();
 	
-	GraphicsHelper::DrawRoom(roomWidth, roomHeight, roomDepth,
+	ShowRoomHelper::DrawRoom(roomWidth, roomHeight, roomDepth,
 		wallTexture, floorTexture, ceilingTexture);
 
-	//GraphicsHelper::DrawWireframeRoom(roomWidth, roomHeight, roomDepth);
+	//ShowRoomHelper::DrawWireframeRoom(roomWidth, roomHeight, roomDepth);
 
 	return TRUE;
 }

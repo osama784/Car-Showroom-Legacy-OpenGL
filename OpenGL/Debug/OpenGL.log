@@ -1,3 +1,1 @@
-﻿  main.cpp
-C:\Users\LENOVO\OneDrive\Desktop\OpenGL\main.cpp(296,3): warning C4838: conversion from 'int' to 'BYTE' requires a narrowing conversion
-  OpenGL.vcxproj -> C:\Users\LENOVO\OneDrive\Desktop\OpenGL\Debug\OpenGL.exe
+﻿  OpenGL.vcxproj -> C:\Users\LENOVO\OneDrive\Desktop\OpenGL\Debug\OpenGL.exe
