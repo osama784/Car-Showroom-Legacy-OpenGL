@@ -146,10 +146,12 @@
     <ClCompile Include="ShowRoomHelper.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="texture.cpp" />
+    <ClCompile Include="TextureHelper.cpp" />
     <ClCompile Include="WorldHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShowRoomHelper.h" />
+    <ClInclude Include="TextureHelper.h" />
     <ClInclude Include="WorldHelper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

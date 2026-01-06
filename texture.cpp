@@ -2,8 +2,6 @@
 #include <windows.h>
 #include <gl.h>			// Header File For The OpenGL32 Library
 #include <glu.h>			// Header File For The GLu32 Library
-//#include <gl\glaux.h>		// Header File For The Glaux Library
-//#include <GL/glut.h>
 #include "texture.h"
 
 
@@ -26,7 +24,7 @@ int num_texture=-1; //Counter to keep track of the last loaded texture
  *
  *********************************************************/
 
-int LoadTexture(char *filename,int alpha) 
+int LoadTexture(const char *filename,int alpha) 
 {
     int i, j=0; //Index variables
     FILE *l_file; //File pointer

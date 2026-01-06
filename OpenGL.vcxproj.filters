@@ -27,12 +27,18 @@
     <ClCompile Include="WorldHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TextureHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShowRoomHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WorldHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

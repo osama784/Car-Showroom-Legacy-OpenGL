@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
+#include "TextureHelper.h"
 
 // For texture loading
 #define STB_IMAGE_IMPLEMENTATION
@@ -17,7 +18,6 @@ WorldHelper::WorldHelper()
     grassTexture = 0;
     roadTexture = 0;
     skyTexture = 0;
-    buildingTexture = 0;
     treeTexture = 0;
 
     // Default light position (noon sun)
@@ -58,80 +58,13 @@ void WorldHelper::initialize(float groundSize, float skyboxSize) {
     calculateLighting();
 }
 
-GLuint WorldHelper::loadTexture(const char* filename) {
-    int width, height, channels;
-
-    // Flip image vertically for OpenGL
-    stbi_set_flip_vertically_on_load(true);
-
-    unsigned char* image = stbi_load(filename, &width, &height, &channels, 0);
-
-    if (!image) {
-        std::cout << "WorldHelper: Failed to load texture: " << filename << std::endl;
-        return 0;
-    }
-
-    GLuint textureID;
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_2D, textureID);
-
-    // Determine format based on channels
-    GLenum format = GL_RGB;
-    if (channels == 4) format = GL_RGBA;
-    else if (channels == 1) format = GL_LUMINANCE;
-
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0,
-        format, GL_UNSIGNED_BYTE, image);
-
-    // Set texture parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    stbi_image_free(image);
-    stbi_set_flip_vertically_on_load(false);
-
-    std::cout << "WorldHelper: Loaded texture " << filename
-        << " (" << width << "x" << height << ")" << std::endl;
-
-    return textureID;
-}
-
 void WorldHelper::loadDefaultTextures() {
     // Try to load actual texture files
-    grassTexture = loadTexture("grass.jpg");
-    roadTexture = loadTexture("road.png");
-    skyTexture = loadTexture("sky.jpg");
-    buildingTexture = loadTexture("building.png");
-    treeTexture = loadTexture("tree.png");
+    grassTexture = TextureHelper::LoadTexture("grass.jpg");
+    //roadTexture = TextureHelper::LoadTexture("road.png");
+    skyTexture = TextureHelper::LoadTexture("sky.jpg");
+    //treeTexture = TextureHelper::LoadTexture("tree.png");
 
-    // If textures fail to load, create procedural ones
-    if (grassTexture == 0) {
-        std::cout << "WorldHelper: Creating procedural textures..." << std::endl;
-
-        // Create procedural grass texture
-        unsigned char grassPixels[64 * 64 * 3];
-        srand(time(NULL));
-        for (int y = 0; y < 64; y++) {
-            for (int x = 0; x < 64; x++) {
-                int offset = (y * 64 + x) * 3;
-                int green = 100 + rand() % 50;
-                grassPixels[offset] = 30;
-                grassPixels[offset + 1] = green;
-                grassPixels[offset + 2] = 30;
-            }
-        }
-
-        glGenTextures(1, &grassTexture);
-        glBindTexture(GL_TEXTURE_2D, grassTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 64, 64, 0,
-            GL_RGB, GL_UNSIGNED_BYTE, grassPixels);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    }
 }
 
 void WorldHelper::drawGround() {
@@ -188,38 +121,8 @@ void WorldHelper::drawRoad() {
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
+
 void WorldHelper::drawSky() {
-    // Simple gradient sky
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_TEXTURE_2D);
-
-    glBegin(GL_QUADS);
-    // Top color (sky blue)
-    glColor3f(clearColor[0], clearColor[1], clearColor[2]);
-    glVertex3f(-groundSize, groundSize, -groundSize);
-    glVertex3f(groundSize, groundSize, -groundSize);
-
-    // Horizon color (lighter)
-    float horizonR = clearColor[0] + 0.3f; if (horizonR > 1.0f) horizonR = 1.0f;
-    float horizonG = clearColor[1] + 0.3f; if (horizonG > 1.0f) horizonG = 1.0f;
-    float horizonB = clearColor[2] + 0.3f; if (horizonB > 1.0f) horizonB = 1.0f;
-
-    glColor3f(horizonR, horizonG, horizonB);
-    glVertex3f(groundSize, 0.0f, -groundSize);
-    glVertex3f(-groundSize, 0.0f, -groundSize);
-    glEnd();
-
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_DEPTH_TEST);
-}
-
-void WorldHelper::drawSimpleSkybox() {
-    // Simple skybox using the sky texture
-    if (skyTexture == 0) {
-        drawSky();  // Fallback to gradient sky
-        return;
-    }
-
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
 
@@ -379,15 +282,6 @@ void WorldHelper::drawBuilding(float x, float z, float width, float depth, float
     glPopMatrix();
 }
 
-void WorldHelper::drawSimpleBuilding(float x, float z, float width, float depth, float height) {
-    // Draw building with random color
-    float r = 0.5f + (rand() % 50) / 100.0f;
-    float g = 0.5f + (rand() % 50) / 100.0f;
-    float b = 0.5f + (rand() % 50) / 100.0f;
-
-    drawBuilding(x, z, width, depth, height, r, g, b);
-}
-
 void WorldHelper::generateTrees(int count) {
     trees.clear();
     srand(time(NULL));
@@ -453,7 +347,7 @@ void WorldHelper::generateBuildings(int count) {
 void WorldHelper::drawOutsideWorld() {
     // Draw in correct order:
     // 1. Sky (background)
-    drawSimpleSkybox();
+    drawSky();
 
     // 2. Ground (opaque)
     drawGround();
@@ -560,14 +454,6 @@ void WorldHelper::calculateLighting() {
 
 float WorldHelper::getTimeOfDay() const {
     return timeOfDay;
-}
-
-float WorldHelper::getGroundSize() const {
-    return groundSize;
-}
-
-GLuint WorldHelper::getGrassTexture() const {
-    return grassTexture;
 }
 
 void WorldHelper::reset() {

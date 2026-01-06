@@ -26,7 +26,6 @@ private:
     GLuint grassTexture;
     GLuint roadTexture;
     GLuint skyTexture;
-    GLuint buildingTexture;
     GLuint treeTexture;
 
     // World dimensions
@@ -50,10 +49,8 @@ private:
     void drawGround();
     void drawRoad();
     void drawSky();
-    void drawSimpleSkybox();
     void drawTree(float x, float z, float trunkHeight, float trunkWidth, float foliageHeight);
     void drawBuilding(float x, float z, float width, float depth, float height, float r, float g, float b);
-    void drawSimpleBuilding(float x, float z, float width, float depth, float height);
     void generateTrees(int count);
     void generateBuildings(int count);
     void calculateLighting();
@@ -65,7 +62,6 @@ public:
 
     // Initialization
     void initialize(float groundSize = 200.0f, float skyboxSize = 500.0f);
-    GLuint loadTexture(const char* filename);
     void loadDefaultTextures();
 
     // Drawing functions
@@ -76,10 +72,6 @@ public:
     void setTimeOfDay(float hour);
     void advanceTime(float deltaHours);
     float getTimeOfDay() const;
-
-    // Getters
-    float getGroundSize() const;
-    GLuint getGrassTexture() const;
 
     // Reset
     void reset();

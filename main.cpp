@@ -8,6 +8,7 @@
 #include "texture.h"
 #include "ShowRoomHelper.h"
 #include "WorldHelper.h"
+#include "TextureHelper.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -32,9 +33,8 @@ float cameraRotateSpeed = 0.05f;
 
 // initialize world
 WorldHelper world;
+ShowRoomHelper showRoom;
 
-// texture variables 
-GLuint wallTexture, floorTexture, ceilingTexture;
 
 // room dimension variables
 float roomWidth = 20.0f;
@@ -77,10 +77,10 @@ int InitGL(GLvoid)										// All Setup For OpenGL Goes Here
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glEnable(GL_TEXTURE_2D);
-	// Load showroom textures
-	wallTexture = ShowRoomHelper::LoadTexture("glass1.jpg");      
-	floorTexture = ShowRoomHelper::LoadTexture("floor.png");
-	ceilingTexture = ShowRoomHelper::LoadTexture("glass1.jpg");
+
+	world.initialize(400.0f, 700.0f);
+	showRoom.initialize();
+
 	
 	return TRUE;										// Initialization Went OK
 }
@@ -103,8 +103,7 @@ int DrawGLScene(GLvoid)                                    // Here's Where We Do
 
 	world.drawOutsideWorld();
 	
-	ShowRoomHelper::DrawRoom(roomWidth, roomHeight, roomDepth,
-		wallTexture, floorTexture, ceilingTexture);
+	showRoom.DrawRoom(roomWidth, roomHeight, roomDepth);
 
 	//ShowRoomHelper::DrawWireframeRoom(roomWidth, roomHeight, roomDepth);
 
@@ -506,6 +505,17 @@ int WINAPI WinMain(HINSTANCE	hInstance,			// Instance
 						if (cameraSpeed < 0.01f) cameraSpeed = 0.01f;
 						keys[VK_SUBTRACT] = FALSE;
 						keys[VK_OEM_MINUS] = FALSE;
+					}
+					// advance world time
+					if (keys['T']) {
+						world.advanceTime(0.5f);  
+						keys['T'] = FALSE;
+					}
+
+					// reset world time
+					if (keys['Y']) {
+						world.reset();
+						keys['Y'] = FALSE;
 					}
 
 					DrawGLScene();					// Draw The Scene

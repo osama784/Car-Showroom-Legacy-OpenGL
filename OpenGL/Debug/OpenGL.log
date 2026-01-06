@@ -1,1 +1,7 @@
-﻿  OpenGL.vcxproj -> C:\Users\LENOVO\OneDrive\Desktop\OpenGL\Debug\OpenGL.exe
+﻿  WorldHelper.cpp
+C:\Users\LENOVO\OneDrive\Desktop\OpenGL\WorldHelper.cpp(287,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\LENOVO\OneDrive\Desktop\OpenGL\WorldHelper.cpp(317,22): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+  main.cpp
+C:\Users\LENOVO\OneDrive\Desktop\OpenGL\main.cpp(262,3): warning C4838: conversion from 'int' to 'BYTE' requires a narrowing conversion
+  Generating Code...
+  OpenGL.vcxproj -> C:\Users\LENOVO\OneDrive\Desktop\OpenGL\Debug\OpenGL.exe

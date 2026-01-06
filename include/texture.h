@@ -18,4 +18,4 @@ extern int num_texture;
  *
  *********************************************************/
 
-extern int LoadTexture(char *filename,int alpha=255);
+extern int LoadTexture(const char *filename,int alpha=255);
