@@ -21,14 +21,25 @@ HINSTANCE	hInstance;		// Holds The Instance Of The Application
 
 bool	keys[256];			// Array Used For The Keyboard Routine
 bool	active = TRUE;		// Window Active Flag Set To TRUE By Default
-bool	fullscreen = FALSE;	// Fullscreen Flag Set To Fullscreen Mode By Default
+bool	fullscreen = TRUE;	// Fullscreen Flag Set To Fullscreen Mode By Default
 
 // camera variables 
-float cameraX = 0.0f, cameraY = 5.0f, cameraZ = 50.0f;
+float cameraX = 0.0f, cameraY = 5.0f, cameraZ = 100.0f;
 float cameraYaw = 0.0f;     // Horizontal rotation (left/right)
 float cameraPitch = 0.0f;   // Vertical rotation (up/down)
-float cameraSpeed = 0.02f;
-float cameraRotateSpeed = 0.05f;
+float cameraSpeed = 0.03f;
+float cameraRotateSpeed = 0.06f;
+
+// mouse control
+bool mouseCaptured = true;
+int lastMouseX = 0;
+int lastMouseY = 0;
+float mouseSensitivity = 0.1f;
+
+POINT screenCenter;
+bool mouseLookEnabled = true;
+
+
 
 
 // initialize 
@@ -308,6 +319,23 @@ BOOL CreateGLWindow(LPCTSTR title, int width, int height, int bits, bool fullscr
 	}
 
 	ShowWindow(hWnd, SW_SHOW);						// Show The Window
+
+	POINT p;
+	GetCursorPos(&p);
+	ScreenToClient(hWnd, &p);
+	lastMouseX = p.x;
+	lastMouseY = p.y;
+
+	RECT rect;
+	GetClientRect(hWnd, &rect);
+
+	screenCenter.x = (rect.right - rect.left) / 2;
+	screenCenter.y = (rect.bottom - rect.top) / 2;
+
+	ClientToScreen(hWnd, &screenCenter);
+	SetCursorPos(screenCenter.x, screenCenter.y);
+
+
 	SetForegroundWindow(hWnd);						// Slightly Higher Priority
 	SetFocus(hWnd);									// Sets Keyboard Focus To The Window
 	ReSizeGLScene(width, height);					// Set Up Our Perspective GL Screen
@@ -377,6 +405,28 @@ LRESULT CALLBACK WndProc(HWND	hWnd,			// Handle For This Window
 		ReSizeGLScene(LOWORD(lParam), HIWORD(lParam));  // LoWord=Width, HiWord=Height
 		return 0;								// Jump Back
 	}
+	case WM_MOUSEMOVE:
+	{
+		if (!mouseLookEnabled) break;
+
+		POINT mouse;
+		GetCursorPos(&mouse);
+
+		int dx = mouse.x - screenCenter.x;
+		int dy = mouse.y - screenCenter.y;
+
+		cameraYaw += dx * mouseSensitivity;
+		cameraPitch -= dy * mouseSensitivity;
+
+		if (cameraPitch > 89.0f)  cameraPitch = 89.0f;
+		if (cameraPitch < -89.0f) cameraPitch = -89.0f;
+
+		SetCursorPos(screenCenter.x, screenCenter.y);
+
+		return 0;
+	}
+
+
 	}
 
 	// Pass All Unhandled Messages To DefWindowProc
@@ -390,6 +440,8 @@ int WINAPI WinMain(HINSTANCE	hInstance,			// Instance
 {
 	MSG		msg;									// Windows Message Structure
 	BOOL	done = FALSE;								// Bool Variable To Exit Loop
+	ShowCursor(FALSE);
+
 
 	// Ask The User Which Screen Mode They Prefer
 	//if (MessageBox(NULL,"Would You Like To Run In Fullscreen Mode?", "Start FullScreen?",MB_YESNO|MB_ICONQUESTION)==IDNO)
@@ -398,7 +450,7 @@ int WINAPI WinMain(HINSTANCE	hInstance,			// Instance
 	}
 
 	// Create Our OpenGL Window
-	if (!CreateGLWindow(L"OpenGL template", 640, 480, 16, fullscreen))
+	if (!CreateGLWindow(L"Car Showroom", 1920, 1080, 32, fullscreen))
 	{
 		return 0;									// Quit If Window Was Not Created
 	}
