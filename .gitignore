@@ -1,2 +1,20 @@
-.vs
-/Debug
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+
+# Build directories
+Debug/
+Release/
+x64/
+x86/
+OpenGL/Debug/
+OpenGL/Release/
+
+# Compiled files
+*.obj
+*.pdb
+*.ilk
+*.exe
+*.dll

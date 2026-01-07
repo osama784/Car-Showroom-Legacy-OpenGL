@@ -1,7 +1,0 @@
-﻿  WorldHelper.cpp
-C:\Users\LENOVO\OneDrive\Desktop\OpenGL\WorldHelper.cpp(52,27): warning C4244: '=': conversion from 'float' to 'GLuint', possible loss of data
-C:\Users\LENOVO\OneDrive\Desktop\OpenGL\WorldHelper.cpp(54,27): warning C4244: '=': conversion from 'float' to 'GLuint', possible loss of data
-C:\Users\LENOVO\OneDrive\Desktop\OpenGL\WorldHelper.cpp(200,17): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\LENOVO\OneDrive\Desktop\OpenGL\WorldHelper.cpp(297,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-C:\Users\LENOVO\OneDrive\Desktop\OpenGL\WorldHelper.cpp(327,22): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-  OpenGL.vcxproj -> C:\Users\LENOVO\OneDrive\Desktop\OpenGL\Debug\OpenGL.exe
