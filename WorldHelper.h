@@ -32,6 +32,11 @@ private:
     float groundSize;
     float worldScale;
 
+    // showroom demensions
+    GLuint showroomWidth;
+    GLuint showroomHight;
+    GLuint showroomDepth;
+
     // Skybox size
     float skyboxSize;
 
@@ -61,7 +66,7 @@ public:
     ~WorldHelper();
 
     // Initialization
-    void initialize(float groundSize = 200.0f, float skyboxSize = 500.0f);
+    void initialize(float groundSize, float skyboxSize, float showroomWidth, float showroomHeight, float showroomDepth);
     void loadDefaultTextures();
 
     // Drawing functions

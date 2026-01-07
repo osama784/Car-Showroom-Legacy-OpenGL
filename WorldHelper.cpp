@@ -12,7 +12,10 @@ WorldHelper::WorldHelper()
     : groundSize(200.0f),
     skyboxSize(500.0f),
     worldScale(1.0f),
-    timeOfDay(12.0f) {
+    timeOfDay(12.0f),
+    showroomWidth(),
+    showroomHight(),
+    showroomDepth(){
 
     // Initialize textures to 0
     grassTexture = 0;
@@ -43,9 +46,12 @@ WorldHelper::~WorldHelper() {
     // Cleanup textures if needed
 }
 
-void WorldHelper::initialize(float groundSize, float skyboxSize) {
+void WorldHelper::initialize(float groundSize, float skyboxSize,float showroomWidth, float showroomHeight, float showroomDepth) {
     this->groundSize = groundSize;
     this->skyboxSize = skyboxSize;
+    this->showroomWidth = showroomWidth;
+    this->showroomHight = showroomHight;
+    this->showroomDepth = showroomDepth;
 
     // Load textures
     loadDefaultTextures();
@@ -96,24 +102,28 @@ void WorldHelper::drawRoad() {
 
     float roadWidth = 8.0f;
     float halfGround = groundSize / 2.0f;
+    float halfShowRoomDepth = showroomDepth / 2.0f;
+    glPushMatrix();
 
+    glTranslatef(0.0f, 0.0f, halfShowRoomDepth);
     glBegin(GL_QUADS);
     // Road from far to near
-    glVertex3f(-roadWidth / 2, 0.01f, -halfGround);
-    glVertex3f(roadWidth / 2, 0.01f, -halfGround);
-    glVertex3f(roadWidth / 2, 0.01f, halfGround);
-    glVertex3f(-roadWidth / 2, 0.01f, halfGround);
+    glVertex3f(-roadWidth / 2, 0.01f, 0.0f);
+    glVertex3f(roadWidth / 2, 0.01f, 0.0f);
+    glVertex3f(roadWidth / 2, 0.01f, halfGround - halfShowRoomDepth);
+    glVertex3f(-roadWidth / 2, 0.01f, halfGround - halfShowRoomDepth);
     glEnd();
-
+    
     // Draw road markings
     glColor3f(1.0f, 1.0f, 0.0f);  // Yellow lines
-    glLineWidth(2.0f);
+    glLineWidth(4.0f);
     glBegin(GL_LINES);
-    for (float z = -halfGround + 5.0f; z < halfGround; z += 10.0f) {
-        glVertex3f(0.0f, 0.02f, z);
+    for (float z = 0; z < halfGround - 5.0f - halfShowRoomDepth; z += 10.0f) {
+        glVertex3f(0.0f, 0.02f, z );
         glVertex3f(0.0f, 0.02f, z + 5.0f);
     }
     glEnd();
+    glPopMatrix();
 
     if (roadTexture == 0) {
         glEnable(GL_TEXTURE_2D);
@@ -187,7 +197,7 @@ void WorldHelper::drawTree(float x, float z, float trunkHeight, float trunkWidth
     int layers = 3;
 
     for (int i = 0; i < layers; i++) {
-        float y = i * foliageHeight / (float)layers;
+        float y = i * foliageHeight / (float)layers / 1.5;
         float radius = foliageRadius * (1.0f - (float)i / (float)layers);
         float layerHeight = foliageHeight / (float)layers;
 
@@ -287,7 +297,7 @@ void WorldHelper::generateTrees(int count) {
     srand(time(NULL));
 
     float halfGround = groundSize / 2.0f;
-    float minDistanceFromCenter = 30.0f;  // Don't place trees too close to center
+    float minDistanceFromCenter = 70.0f;  // Don't place trees too close to center
 
     for (int i = 0; i < count; i++) {
         Tree tree;
@@ -300,8 +310,8 @@ void WorldHelper::generateTrees(int count) {
         float dist = sqrt(tree.x * tree.x + tree.z * tree.z);
         if (dist < minDistanceFromCenter) {
             // Move tree further out
-            tree.x *= 1.5f;
-            tree.z *= 1.5f;
+            tree.x *= 4.5f;
+            tree.z *= 4.5f;
         }
 
         // Random size
@@ -353,7 +363,7 @@ void WorldHelper::drawOutsideWorld() {
     drawGround();
 
     // 3. Roads
-    /*drawRoad();*/
+    drawRoad();
 
     // 4. Trees and buildings
     for (const auto& tree : trees) {

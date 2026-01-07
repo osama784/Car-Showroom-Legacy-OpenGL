@@ -24,14 +24,14 @@ bool	active = TRUE;		// Window Active Flag Set To TRUE By Default
 bool	fullscreen = FALSE;	// Fullscreen Flag Set To Fullscreen Mode By Default
 
 // camera variables 
-float cameraX = 0.0f, cameraY = 5.0f, cameraZ = 15.0f;
+float cameraX = 0.0f, cameraY = 5.0f, cameraZ = 50.0f;
 float cameraYaw = 0.0f;     // Horizontal rotation (left/right)
 float cameraPitch = 0.0f;   // Vertical rotation (up/down)
 float cameraSpeed = 0.02f;
 float cameraRotateSpeed = 0.05f;
 
 
-// initialize world
+// initialize 
 WorldHelper world;
 ShowRoomHelper showRoom;
 
@@ -78,8 +78,9 @@ int InitGL(GLvoid)										// All Setup For OpenGL Goes Here
 
 	glEnable(GL_TEXTURE_2D);
 
-	world.initialize(400.0f, 700.0f);
-	showRoom.initialize();
+	world.initialize(400.0f, 700.0f, 100.0f, 20.0f, 80.0f);
+	showRoom.initialize(100.0f, 20.0f, 80.0f);
+	showRoom.setupShowroomLighting();
 
 	
 	return TRUE;										// Initialization Went OK
@@ -103,9 +104,7 @@ int DrawGLScene(GLvoid)                                    // Here's Where We Do
 
 	world.drawOutsideWorld();
 	
-	showRoom.DrawRoom(roomWidth, roomHeight, roomDepth);
-
-	//ShowRoomHelper::DrawWireframeRoom(roomWidth, roomHeight, roomDepth);
+	showRoom.drawShowroomComplete();
 
 	return TRUE;
 }
