@@ -12,12 +12,19 @@ struct Tree {
     float x, z;
     float height;
     float trunkWidth;
+    float radius() const {
+        return trunkWidth * 1.5f;
+    }
 };
 
 struct Building {
     float x, z;
     float width, depth, height;
     float r, g, b;  // Building color
+    bool collides(float px, float pz, float buffer = 1.0f) const {
+        return px > x - width / 2 - buffer && px < x + width / 2 + buffer &&
+            pz > z - depth / 2 - buffer && pz < z + depth / 2 + buffer;
+    }
 };
 
 class WorldHelper {
@@ -83,6 +90,10 @@ public:
 
     // Debug
     void renderWorldInfo(float x, float y);
+
+    // Check if camera at (camX, camZ) with radius camRadius collides with any tree or building
+    bool checkCameraCollision(float camX, float camZ, float camRadius);
+
 };
 
 #endif // WORLDHELPER_H

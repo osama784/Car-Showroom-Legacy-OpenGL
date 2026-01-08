@@ -478,43 +478,46 @@ int WINAPI WinMain(HINSTANCE	hInstance,			// Instance
 				{
 					done = TRUE;						// ESC Signalled A Quit
 				}
-				else								// Not Time To Quit, Update Screen
+				else // Not Time To Quit, Update Screen
 				{
 					// Calculate forward and right vectors based on camera yaw (horizontal rotation)
-					float forwardX = sin(cameraYaw * 3.14159f / 180.0f);
-					float forwardZ = -cos(cameraYaw * 3.14159f / 180.0f);
-					float rightX = cos(cameraYaw * 3.14159f / 180.0f);
-					float rightZ = sin(cameraYaw * 3.14159f / 180.0f);
+					float radYaw = cameraYaw * 3.14159f / 180.0f;
+					float forwardX = sin(radYaw);
+					float forwardZ = -cos(radYaw);
+					float rightX = cos(radYaw);
+					float rightZ = sin(radYaw);
+
+					// Save current camera position (for collision rollback)
+					float oldX = cameraX;
+					float oldZ = cameraZ;
 
 					// Camera movement - WASD (relative to look direction)
 					if (keys['W']) {
-						// Move forward
 						cameraX += forwardX * cameraSpeed;
 						cameraZ += forwardZ * cameraSpeed;
 					}
 					if (keys['S']) {
-						// Move backward
 						cameraX -= forwardX * cameraSpeed;
 						cameraZ -= forwardZ * cameraSpeed;
 					}
 					if (keys['A']) {
-						// Move left (strafe left)
 						cameraX -= rightX * cameraSpeed;
 						cameraZ -= rightZ * cameraSpeed;
 					}
 					if (keys['D']) {
-						// Move right (strafe right)
 						cameraX += rightX * cameraSpeed;
 						cameraZ += rightZ * cameraSpeed;
 					}
-					if (keys['Q']) {
-						// Move down
-						cameraY -= cameraSpeed;
+
+					// ===== COLLISION CHECK WITH WORLD OBJECTS =====
+					float cameraRadius = 1.0f; // Collision size of the camera
+
+					if (world.checkCameraCollision(cameraX, cameraZ, cameraRadius)) {
+						// Revert position if collision detected
+						cameraX = oldX;
+						cameraZ = oldZ;
 					}
-					if (keys['E']) {
-						// Move up
-						cameraY += cameraSpeed;
-					}
+					// =============================================
 
 					// Camera look around - Arrow keys
 					if (keys[VK_LEFT]) {
@@ -530,7 +533,7 @@ int WINAPI WinMain(HINSTANCE	hInstance,			// Instance
 						cameraPitch -= cameraRotateSpeed;
 					}
 
-					// Clamp pitch to prevent camera flipping (optional but recommended)
+					// Clamp pitch to prevent camera flipping
 					if (cameraPitch > 89.0f) cameraPitch = 89.0f;
 					if (cameraPitch < -89.0f) cameraPitch = -89.0f;
 
@@ -557,21 +560,23 @@ int WINAPI WinMain(HINSTANCE	hInstance,			// Instance
 						keys[VK_SUBTRACT] = FALSE;
 						keys[VK_OEM_MINUS] = FALSE;
 					}
-					// advance world time
+
+					// Advance world time
 					if (keys['T']) {
-						world.advanceTime(0.5f);  
+						world.advanceTime(0.5f);
 						keys['T'] = FALSE;
 					}
 
-					// reset world time
+					// Reset world time
 					if (keys['Y']) {
 						world.reset();
 						keys['Y'] = FALSE;
 					}
 
-					DrawGLScene();					// Draw The Scene
-					SwapBuffers(hDC);				// Swap Buffers (Double Buffering)
+					DrawGLScene();        // Draw The Scene
+					SwapBuffers(hDC);     // Swap Buffers
 				}
+
 			}
 
 			if (keys[VK_F1])						// Is F1 Being Pressed?

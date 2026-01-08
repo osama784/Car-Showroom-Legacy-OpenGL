@@ -427,7 +427,7 @@ void WorldHelper::calculateLighting() {
     lightPosition[2] = sin(sunAngle * 3.14159f / 180.0f) * sunDistance;
 
     // Adjust light color based on time
-    if (timeOfDay > 6.0f && timeOfDay < 18.0f) {
+    if (timeOfDay > 6.0f && timeOfDay < 7.0f) {
         // Daytime
         lightDiffuse[0] = 0.8f;
         lightDiffuse[1] = 0.8f;
@@ -480,4 +480,29 @@ void WorldHelper::renderWorldInfo(float x, float y) {
     std::cout << "World Info: Time = " << timeOfDay
         << ", Trees = " << trees.size()
         << ", Buildings = " << buildings.size() << std::endl;
+}
+
+
+
+bool WorldHelper::checkCameraCollision(float camX, float camZ, float camRadius) {
+
+    // Check collision with trees (circular collision)
+    for (const auto& tree : trees) {
+        float dx = camX - tree.x;
+        float dz = camZ - tree.z;
+        float distance = sqrt(dx * dx + dz * dz);
+
+        if (distance < camRadius + tree.radius()) {
+            return true; // Collision with tree
+        }
+    }
+
+    // Check collision with buildings (AABB collision)
+    for (const auto& building : buildings) {
+        if (building.collides(camX, camZ, camRadius)) {
+            return true; // Collision with building
+        }
+    }
+
+    return false; // No collision
 }
