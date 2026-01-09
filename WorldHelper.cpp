@@ -298,25 +298,76 @@ void WorldHelper::generateTrees(int count) {
 
     float halfGround = groundSize / 2.0f;
     float minDistanceFromCenter = 70.0f;  // Don't place trees too close to center
+    float minDistanceFromRoad = 10.0f;    // Don't place trees too close to road
+    float safeMargin = 5.0f;              // Safe margin from ground edges
+
+    // Define road area to avoid placing trees on the road
+    float roadHalfWidth = 4.0f;           // Road width is 8.0f, so half is 4.0f
+    float roadStartZ = 0.0f;              // Road starts from showroom
+    float roadEndZ = halfGround;          // Road extends to ground edge
 
     for (int i = 0; i < count; i++) {
         Tree tree;
+        bool validPosition = false;
+        int attempts = 0;
+        const int MAX_ATTEMPTS = 100;  // Prevent infinite loop
 
-        // Random position
-        tree.x = (rand() % (int)groundSize) - halfGround;
-        tree.z = (rand() % (int)groundSize) - halfGround;
+        // Keep trying until we find a valid position
+        while (!validPosition && attempts < MAX_ATTEMPTS) {
+            // Random position within ground boundaries with safe margin
+            float maxPos = halfGround - safeMargin;
+            tree.x = (rand() % (int)(maxPos * 2)) - maxPos;
+            tree.z = (rand() % (int)(maxPos * 2)) - maxPos;
 
-        // Check distance from center
-        float dist = sqrt(tree.x * tree.x + tree.z * tree.z);
-        if (dist < minDistanceFromCenter) {
-            // Move tree further out
-            tree.x *= 4.5f;
-            tree.z *= 4.5f;
+            // Check distance from center (showroom area)
+            float distFromCenter = sqrt(tree.x * tree.x + tree.z * tree.z);
+
+            // Check if too close to road
+            bool tooCloseToRoad = false;
+            if (tree.z >= roadStartZ && tree.z <= roadEndZ) {
+                if (fabs(tree.x) < roadHalfWidth + minDistanceFromRoad) {
+                    tooCloseToRoad = true;
+                }
+            }
+
+            // Check if position is valid
+            if (distFromCenter >= minDistanceFromCenter && !tooCloseToRoad) {
+                // Check if this tree would overlap with existing trees
+                bool overlaps = false;
+                float minTreeDistance = 8.0f;  // Minimum distance between trees
+
+                for (const auto& existingTree : trees) {
+                    float dx = tree.x - existingTree.x;
+                    float dz = tree.z - existingTree.z;
+                    float distance = sqrt(dx * dx + dz * dz);
+
+                    if (distance < minTreeDistance) {
+                        overlaps = true;
+                        break;
+                    }
+                }
+
+                if (!overlaps) {
+                    validPosition = true;
+                }
+            }
+
+            attempts++;
+        }
+
+        // If we couldn't find a valid position after many attempts,
+        // place the tree anyway but far from center
+        if (!validPosition) {
+            // Place at edge of ground with safe margin
+            float angle = (rand() % 360) * 3.14159f / 180.0f;
+            float distance = halfGround - safeMargin - 10.0f;  // 10 units from edge
+            tree.x = cos(angle) * distance;
+            tree.z = sin(angle) * distance;
         }
 
         // Random size
-        tree.height = 5.0f + (rand() % 100) / 10.0f;  // 5-15 units tall
-        tree.trunkWidth = 0.3f + (rand() % 50) / 100.0f;  // 0.3-0.8 units wide
+        tree.height = 5.0f + (rand() % 100) / 10.0f;       // 5-15 units tall
+        tree.trunkWidth = 0.3f + (rand() % 50) / 100.0f;   // 0.3-0.8 units wide
 
         trees.push_back(tree);
     }
@@ -324,34 +375,98 @@ void WorldHelper::generateTrees(int count) {
 
 void WorldHelper::generateBuildings(int count) {
     buildings.clear();
-    srand(time(NULL) + 1234);  // Different seed from trees
 
-    float halfGround = groundSize / 2.0f;
-    float minDistanceFromCenter = 40.0f;
+    // Always create exactly 8 buildings in smart fixed positions
+    const int targetCount = 8;
 
-    for (int i = 0; i < count; i++) {
+    std::cout << "=== Generating " << targetCount << " fixed buildings ===" << std::endl;
+
+    // Smart fixed positions around the showroom
+    // We'll use arrays instead of tuples to avoid compilation issues
+    struct BuildingData {
+        float x, z, width, depth, height, r, g, b;
+    };
+
+    BuildingData fixedBuildings[] = {
+        // === BUILDINGS IN FRONT OF SHOWROOM (4 buildings) ===
+
+        // 1. Front-right building
+        {100.0f, 150.0f, 20.0f, 16.0f, 35.0f, 0.6f, 0.5f, 0.4f},
+
+        // 2. Front-left building
+        {-100.0f, 150.0f, 18.0f, 15.0f, 32.0f, 0.5f, 0.6f, 0.5f},
+
+        // 3. Front-far-right
+        {100.0f, 75.0f, 25.0f, 20.0f, 40.0f, 0.7f, 0.5f, 0.5f},
+
+        // 4. Front-far-left
+        {-100.0f, 75.0f, 22.0f, 18.0f, 38.0f, 0.5f, 0.5f, 0.7f},
+
+        // === BUILDINGS BEHIND SHOWROOM (4 buildings) ===
+
+        // 5. Back-right
+        {120.0f, -75.0f, 16.0f, 14.0f, 28.0f, 0.6f, 0.6f, 0.4f},
+
+        // 6. Back-left
+        {-120.0f, -75.0f, 17.0f, 13.0f, 30.0f, 0.4f, 0.6f, 0.6f},
+
+        // 7. Back-far-right
+        {120.0f, -150.0f, 20.0f, 17.0f, 33.0f, 0.6f, 0.4f, 0.6f},
+
+        // 8. Back-far-left
+        {-120.0f, -150.0f, 19.0f, 16.0f, 31.0f, 0.5f, 0.7f, 0.5f}
+    };
+
+    // Calculate array size
+    int buildingCount = sizeof(fixedBuildings) / sizeof(fixedBuildings[0]);
+
+    // Create all fixed buildings
+    for (int i = 0; i < buildingCount; i++) {
         Building building;
 
-        // Place buildings near the edges
-        building.x = (rand() % (int)(halfGround - 20)) + 60.0f;
-        building.z = (rand() % (int)(halfGround - 20)) + 60.0f;
+        // Copy building data
+        building.x = fixedBuildings[i].x;
+        building.z = fixedBuildings[i].z;
+        building.width = fixedBuildings[i].width;
+        building.depth = fixedBuildings[i].depth;
+        building.height = fixedBuildings[i].height;
+        building.r = fixedBuildings[i].r;
+        building.g = fixedBuildings[i].g;
+        building.b = fixedBuildings[i].b;
 
-        // Randomly negate positions for all quadrants
-        if (rand() % 2 == 0) building.x = -building.x;
-        if (rand() % 2 == 0) building.z = -building.z;
-
-        // Random size
-        building.width = 10.0f + (rand() % 100) / 10.0f;
-        building.depth = 8.0f + (rand() % 80) / 10.0f;
-        building.height = 15.0f + (rand() % 150) / 10.0f;
-
-        // Random color
-        building.r = 0.4f + (rand() % 60) / 100.0f;
-        building.g = 0.4f + (rand() % 60) / 100.0f;
-        building.b = 0.4f + (rand() % 60) / 100.0f;
-
+        // Add to buildings vector
         buildings.push_back(building);
+
+        // Print debug information
+        std::cout << "Building " << (i + 1) << " placed at: ("
+            << building.x << ", " << building.z << ")" << std::endl;
+        std::cout << "  Size: " << building.width << " x "
+            << building.depth << " x " << building.height << std::endl;
+        std::cout << "  Color: (" << building.r << ", "
+            << building.g << ", " << building.b << ")" << std::endl;
+        std::cout << "  Position: "
+            << (building.z > 0 ? "Front" : "Back") << " - "
+            << (building.x > 0 ? "Right" : "Left") << std::endl;
     }
+
+    // Summary
+    std::cout << "=== Buildings Generation Complete ===" << std::endl;
+    std::cout << "Total buildings created: " << buildings.size() << std::endl;
+
+    // Count buildings in front and back
+    int frontCount = 0;
+    int backCount = 0;
+    for (int i = 0; i < buildings.size(); i++) {  // FIXED: size_t instead of int
+        if (buildings[i].z > 0) {
+            frontCount++;
+        }
+        else {
+            backCount++;
+        }
+    }
+
+    std::cout << "Buildings in front of showroom (z > 0): " << frontCount << std::endl;
+    std::cout << "Buildings behind showroom (z < 0): " << backCount << std::endl;
 }
 
 void WorldHelper::drawOutsideWorld() {

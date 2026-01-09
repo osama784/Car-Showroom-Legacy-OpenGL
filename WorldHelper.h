@@ -66,6 +66,8 @@ private:
     void generateTrees(int count);
     void generateBuildings(int count);
     void calculateLighting();
+    void drawRoadIntersections(float branchStartZ, float roadWidth);
+    void drawBranchRoadMarkings(float branchStartZ, float roadWidth,float rightBuildingX, float leftBuildingX,float buildingDistance);
 
 public:
     // Constructor & Destructor

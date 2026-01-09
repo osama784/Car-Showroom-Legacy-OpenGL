@@ -24,7 +24,7 @@ bool	active = TRUE;		// Window Active Flag Set To TRUE By Default
 bool	fullscreen = TRUE;	// Fullscreen Flag Set To Fullscreen Mode By Default
 
 // camera variables 
-float cameraX = 0.0f, cameraY = 5.0f, cameraZ = 100.0f;
+float cameraX = 0.0f, cameraY = 5.0f, cameraZ = 150.0f;
 float cameraYaw = 0.0f;     // Horizontal rotation (left/right)
 float cameraPitch = 0.0f;   // Vertical rotation (up/down)
 float cameraSpeed = 0.03f;
