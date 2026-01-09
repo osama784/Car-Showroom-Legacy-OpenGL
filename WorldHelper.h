@@ -96,6 +96,15 @@ public:
     // Check if camera at (camX, camZ) with radius camRadius collides with any tree or building
     bool checkCameraCollision(float camX, float camZ, float camRadius);
 
+    // Check if camera is within world boundaries
+    bool checkWorldBoundaries(float camX, float camZ, float camRadius);
+
+    // Get world boundaries
+    float getWorldMinX() const { return -groundSize / 2.0f; }
+    float getWorldMaxX() const { return groundSize / 2.0f; }
+    float getWorldMinZ() const { return -groundSize / 2.0f; }
+    float getWorldMaxZ() const { return groundSize / 2.0f; }
+
 };
 
 #endif // WORLDHELPER_H

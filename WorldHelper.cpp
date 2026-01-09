@@ -131,7 +131,6 @@ void WorldHelper::drawRoad() {
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
-
 void WorldHelper::drawSky() {
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
@@ -597,11 +596,36 @@ void WorldHelper::renderWorldInfo(float x, float y) {
         << ", Buildings = " << buildings.size() << std::endl;
 }
 
+bool WorldHelper::checkWorldBoundaries(float camX, float camZ, float camRadius) {
+    float halfGround = groundSize / 2.0f;
+    float margin = 15.0f; // Safe margin from world edge
 
+    // Check X boundaries (left and right)
+    if (camX - camRadius < -halfGround + margin) {
+        return true; // Collision with left boundary
+    }
+    if (camX + camRadius > halfGround - margin) {
+        return true; // Collision with right boundary
+    }
+
+    // Check Z boundaries (front and back)
+    if (camZ - camRadius < -halfGround + margin) {
+        return true; // Collision with back boundary
+    }
+    if (camZ + camRadius > halfGround - margin) {
+        return true; // Collision with front boundary
+    }
+
+    return false; // No boundary collision
+}
 
 bool WorldHelper::checkCameraCollision(float camX, float camZ, float camRadius) {
+    // 1. Check world boundaries first (fast check)
+    if (checkWorldBoundaries(camX, camZ, camRadius)) {
+        return true; // Collision with world boundary
+    }
 
-    // Check collision with trees (circular collision)
+    // 2. Check collision with trees (circular collision)
     for (const auto& tree : trees) {
         float dx = camX - tree.x;
         float dz = camZ - tree.z;
@@ -612,7 +636,7 @@ bool WorldHelper::checkCameraCollision(float camX, float camZ, float camRadius) 
         }
     }
 
-    // Check collision with buildings (AABB collision)
+    // 3. Check collision with buildings (AABB collision)
     for (const auto& building : buildings) {
         if (building.collides(camX, camZ, camRadius)) {
             return true; // Collision with building
