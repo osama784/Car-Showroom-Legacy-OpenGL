@@ -228,69 +228,93 @@ void WorldHelper::drawBuilding(float x, float z, float width, float depth, float
     glPushMatrix();
     glTranslatef(x, height / 2, z);
 
-    glDisable(GL_TEXTURE_2D);
+
+    // Enable texture for the entire building
+    glEnable(GL_TEXTURE_2D);
     glColor3f(r, g, b);
 
-    // Draw main building cube
+    // Draw main building cube with texture coordinates
     glBegin(GL_QUADS);
-    // Front face
-    glVertex3f(-width / 2, -height / 2, -depth / 2);
-    glVertex3f(width / 2, -height / 2, -depth / 2);
-    glVertex3f(width / 2, height / 2, -depth / 2);
-    glVertex3f(-width / 2, height / 2, -depth / 2);
 
-    // Back face
-    glVertex3f(-width / 2, -height / 2, depth / 2);
-    glVertex3f(width / 2, -height / 2, depth / 2);
-    glVertex3f(width / 2, height / 2, depth / 2);
-    glVertex3f(-width / 2, height / 2, depth / 2);
+    // Front face -  texture
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-width / 2, -height / 2, depth / 2);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(width / 2, -height / 2, depth / 2);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(width / 2, height / 2, depth / 2);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-width / 2, height / 2, depth / 2);
 
-    // Left face
-    glVertex3f(-width / 2, -height / 2, -depth / 2);
-    glVertex3f(-width / 2, -height / 2, depth / 2);
-    glVertex3f(-width / 2, height / 2, depth / 2);
-    glVertex3f(-width / 2, height / 2, -depth / 2);
+    // Back face -    texture
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-width / 2, -height / 2, -depth / 2);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(width / 2, -height / 2, -depth / 2);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(width / 2, height / 2, -depth / 2);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-width / 2, height / 2, -depth / 2);
 
-    // Right face
-    glVertex3f(width / 2, -height / 2, -depth / 2);
-    glVertex3f(width / 2, -height / 2, depth / 2);
-    glVertex3f(width / 2, height / 2, depth / 2);
-    glVertex3f(width / 2, height / 2, -depth / 2);
+    
 
-    // Top face
-    glVertex3f(-width / 2, height / 2, -depth / 2);
-    glVertex3f(width / 2, height / 2, -depth / 2);
-    glVertex3f(width / 2, height / 2, depth / 2);
-    glVertex3f(-width / 2, height / 2, depth / 2);
+    // Left face -    texture
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-width / 2, -height / 2, -depth / 2);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(-width / 2, -height / 2, depth / 2);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(-width / 2, height / 2, depth / 2);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-width / 2, height / 2, -depth / 2);
+
+    // Right face -    texture
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(width / 2, -height / 2, -depth / 2);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(width / 2, -height / 2, depth / 2);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(width / 2, height / 2, depth / 2);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(width / 2, height / 2, -depth / 2);
+
     glEnd();
 
-    // Draw windows (optional)
-    glColor3f(0.1f, 0.1f, 0.2f);  // Dark blue windows
+    // Draw windows with texture
+    glEnable(GL_TEXTURE_2D);
+    glColor3f(0.8f, 0.8f, 1.0f); 
+
     float windowWidth = width / 8.0f;
     float windowHeight = height / 10.0f;
     float windowSpacingX = width / 4.0f;
     float windowSpacingY = height / 5.0f;
 
-    for (int row = 0; row < 4; row++) {
-        for (int col = 0; col < 3; col++) {
-            float wx = -width / 3 + col * windowSpacingX;
-            float wy = -height / 3 + row * windowSpacingY;
+    for (int face = 0; face < 4; face++) {
+        for (int row = 0; row < 4; row++) {
+            for (int col = 0; col < 3; col++) {
+                float wx = -width / 3 + col * windowSpacingX;
+                float wy = -height / 3 + row * windowSpacingY;
 
-            // Front windows
-            glBegin(GL_QUADS);
-            glVertex3f(wx - windowWidth / 2, wy - windowHeight / 2, -depth / 2 - 0.01f);
-            glVertex3f(wx + windowWidth / 2, wy - windowHeight / 2, -depth / 2 - 0.01f);
-            glVertex3f(wx + windowWidth / 2, wy + windowHeight / 2, -depth / 2 - 0.01f);
-            glVertex3f(wx - windowWidth / 2, wy + windowHeight / 2, -depth / 2 - 0.01f);
-            glEnd();
+                glPushMatrix();
+
+                
+                switch (face) {
+                case 0: // Front face
+                    glTranslatef(wx, wy, -depth / 2 - 0.01f);
+                    break;
+                case 1: // Back face
+                    glTranslatef(wx, wy, depth / 2 + 0.01f);
+                    glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+                    break;
+                case 2: // Left face
+                    glTranslatef(-width / 2 - 0.01f, wy, wx);
+                    glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+                    break;
+                case 3: // Right face
+                    glTranslatef(width / 2 + 0.01f, wy, -wx);
+                    glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
+                    break;
+                }
+
+                glBegin(GL_QUADS);
+                glTexCoord2f(0.0f, 0.0f); glVertex3f(-windowWidth / 2, -windowHeight / 2, 0.0f);
+                glTexCoord2f(1.0f, 0.0f); glVertex3f(windowWidth / 2, -windowHeight / 2, 0.0f);
+                glTexCoord2f(1.0f, 1.0f); glVertex3f(windowWidth / 2, windowHeight / 2, 0.0f);
+                glTexCoord2f(0.0f, 1.0f); glVertex3f(-windowWidth / 2, windowHeight / 2, 0.0f);
+                glEnd();
+
+                glPopMatrix();
+            }
         }
     }
 
-    glEnable(GL_TEXTURE_2D);
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
     glPopMatrix();
 }
-
 void WorldHelper::generateTrees(int count) {
     trees.clear();
     srand(time(NULL));
@@ -489,7 +513,7 @@ void WorldHelper::drawOutsideWorld() {
 
     for (const auto& building : buildings) {
         drawBuilding(building.x, building.z,
-            building.width, building.depth, building.height,
+            building.width, building.depth+20, building.height,
             building.r, building.g, building.b);
     }
 }
