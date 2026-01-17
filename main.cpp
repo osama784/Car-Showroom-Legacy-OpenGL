@@ -12,6 +12,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "FurnitureHelper.h"
 
 
 HDC			hDC = NULL;		// Private GDI Device Context
@@ -67,7 +68,7 @@ GLvoid ReSizeGLScene(GLsizei width, GLsizei height)		// Resize And Initialize Th
 	glLoadIdentity();									// Reset The Projection Matrix
 
 	// Calculate The Aspect Ratio Of The Window
-	gluPerspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
+	gluPerspective(80.0f, (GLfloat)width / (GLfloat)height, 0.1f, 1500.0f);
 
 	glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
 	glLoadIdentity();									// Reset The Modelview Matrix
@@ -90,8 +91,9 @@ int InitGL(GLvoid)										// All Setup For OpenGL Goes Here
 	glEnable(GL_TEXTURE_2D);
 
 	world.initialize(400.0f, 700.0f, 100.0f, 20.0f, 80.0f);
-	showRoom.initialize(100.0f, 20.0f, 80.0f);
+	showRoom.initialize(100.0, 18.0f, 100.0f);
 	showRoom.setupShowroomLighting();
+	FurnitureHelper::initialize();
 
 	
 	return TRUE;										// Initialization Went OK

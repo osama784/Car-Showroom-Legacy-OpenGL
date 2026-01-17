@@ -15,6 +15,7 @@ struct ShowroomSection {
     GLuint floorTexture;     // Floor texture for this section
     GLuint wallTexture;      // Wall texture for this section
     int carCapacity;         // How many cars this section can hold
+    int textureIndex;
 
     // Display area (platform for car)
     float displayPlatformX, displayPlatformZ;
@@ -49,6 +50,8 @@ private:
 
     // Internal sections/rooms
     std::vector<ShowroomSection> sections;
+    std::vector<GLuint> sectionFloorTextures;
+    GLuint glassTexture;  // Add this for the glass texture
 
 
 public:
@@ -63,16 +66,21 @@ public:
 
     // Section management
     void addSection(float x, float z, float width, float depth,
-        float wallHeight = 6.0f, int carCapacity = 1);
+        float wallHeight = 6.0f, int carCapacity = 1,int textureIndex = 0);
     void createGridSections(int rows, int cols, float sectionWidth = 20.0f,
         float sectionDepth = 15.0f);
     void clearSections();
+
 
     // Drawing functions
     void drawMainShowroom();
     void drawSection(const ShowroomSection& section);
     void drawAllSections();
     void drawShowroomComplete();  // Draws everything
+
+
+    void drawMainShowroomFurniture();
+    void drawSectionFurniture(const ShowroomSection& section);
 
     // Display platforms (where cars will sit)
     void drawDisplayPlatform(float x, float z, float width, float depth, float height = 0.1f);
@@ -94,6 +102,7 @@ public:
     void setGlassMaterial();
     void setFloorMaterial();
     void resetMaterial();
+    void setSolidWallMaterial();
 
     // Getters
     float getMainWidth() const { return mainWidth; }
