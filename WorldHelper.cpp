@@ -135,19 +135,122 @@ void WorldHelper::drawSky() {
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
 
-    float halfSize = skyboxSize / 2.0f;
-
     glBindTexture(GL_TEXTURE_2D, skyTexture);
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    glColor4f(1.0f, 2.0f, 2.0f, 1.0f);
 
-    // Draw sky as a dome (simplified - just a large quad)
-    glBegin(GL_QUADS);
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(-halfSize, 0.0f, -halfSize);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(halfSize, 0.0f, -halfSize);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(halfSize, halfSize, -halfSize);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(-halfSize, halfSize, -halfSize);
+    float radius = skyboxSize / 2.0f;
+    int slices = 32;
+    int stacks = 16;
+
+    // Draw sky dome
+    for (int i = 0; i < stacks; ++i) {
+        float phi1 = 1.57079633f * (float)i / (float)stacks;
+        float phi2 = 1.57079633f * (float)(i + 1) / (float)stacks;
+
+        glBegin(GL_QUAD_STRIP);
+        for (int j = 0; j <= slices; ++j) {
+            float theta = 6.28318531f * (float)j / (float)slices;
+            float cosTheta = cos(theta);
+            float sinTheta = sin(theta);
+
+            float x1 = radius * cosTheta * cos(phi1);
+            float y1 = radius * sin(phi1);
+            float z1 = radius * sinTheta * cos(phi1);
+
+            float x2 = radius * cosTheta * cos(phi2);
+            float y2 = radius * sin(phi2);
+            float z2 = radius * sinTheta * cos(phi2);
+
+            float s1 = (float)j / (float)slices;
+            float t1 = (float)i / (float)stacks;
+            float s2 = (float)j / (float)slices;
+            float t2 = (float)(i + 1) / (float)stacks;
+
+            glTexCoord2f(s1, 1.0f - t1);
+            glVertex3f(x1, y1, z1);
+
+            glTexCoord2f(s2, 1.0f - t2);
+            glVertex3f(x2, y2, z2);
+        }
+        glEnd();
+    }
+
+    // Sunrise/sunset effect
+    if ((timeOfDay > 17.0f && timeOfDay < 19.0f) ||
+        (timeOfDay > 5.0f && timeOfDay < 7.0f)) {
+
+        glDisable(GL_TEXTURE_2D);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        float sunHeight = 0.3f;
+        float sunSize = 40.0f;
+
+        float sunAngle = ((timeOfDay - 6.0f) / 12.0f) * 3.14159265f;
+        float sunX = radius * 0.7f * cos(sunAngle);
+        float sunZ = radius * 0.7f * sin(sunAngle);
+
+        // Sun disk
+        glColor4f(1.0f, 0.7f, 0.3f, 0.8f);
+        glPushMatrix();
+        glTranslatef(sunX, sunHeight * radius, sunZ);
+
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex3f(0.0f, 0.0f, 0.0f);
+        for (int i = 0; i <= 32; ++i) {
+            float angle = 6.28318531f * (float)i / 32.0f;
+            glVertex3f(sunSize * cos(angle), sunSize * sin(angle), 0.0f);
+        }
+        glEnd();
+        glPopMatrix();
+
+        // Sun glow
+        glColor4f(1.0f, 0.5f, 0.2f, 0.4f);
+        glPushMatrix();
+        glTranslatef(sunX, sunHeight * radius, sunZ);
+
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex3f(0.0f, 0.0f, 0.0f);
+        for (int i = 0; i <= 32; ++i) {
+            float angle = 6.28318531f * (float)i / 32.0f;
+            glVertex3f(sunSize * 1.5f * cos(angle), sunSize * 1.5f * sin(angle), 0.0f);
+        }
+        glEnd();
+        glPopMatrix();
+
+        glDisable(GL_BLEND);
+        glEnable(GL_TEXTURE_2D);
+    }
+
+    // Horizon effect
+    glDisable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    float horizonY = 0.0f;
+    float horizonRadius = radius * 1.1f;
+
+    glBegin(GL_QUAD_STRIP);
+    for (int i = 0; i <= 64; ++i) {
+        float angle = 6.28318531f * (float)i / 64.0f;
+        float x = horizonRadius * cos(angle);
+        float z = horizonRadius * sin(angle);
+
+        if (timeOfDay > 6.0f && timeOfDay < 18.0f) {
+            glColor4f(0.8f, 0.9f, 1.0f, 0.8f);
+        }
+        else {
+            glColor4f(0.3f, 0.3f, 0.5f, 0.8f);
+        }
+        glVertex3f(x, horizonY, z);
+
+        glColor4f(clearColor[0], clearColor[1], clearColor[2], 0.0f);
+        glVertex3f(x, horizonY + 20.0f, z);
+    }
     glEnd();
 
+    glDisable(GL_BLEND);
+    glEnable(GL_TEXTURE_2D);
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
 }
@@ -411,33 +514,14 @@ void WorldHelper::generateBuildings(int count) {
     };
 
     BuildingData fixedBuildings[] = {
-        // === BUILDINGS IN FRONT OF SHOWROOM (4 buildings) ===
-
-        // 1. Front-right building
-        {100.0f, 150.0f, 20.0f, 16.0f, 35.0f, 0.6f, 0.5f, 0.4f},
-
-        // 2. Front-left building
-        {-100.0f, 150.0f, 18.0f, 15.0f, 32.0f, 0.5f, 0.6f, 0.5f},
-
-        // 3. Front-far-right
-        {100.0f, 75.0f, 25.0f, 20.0f, 40.0f, 0.7f, 0.5f, 0.5f},
-
-        // 4. Front-far-left
-        {-100.0f, 75.0f, 22.0f, 18.0f, 38.0f, 0.5f, 0.5f, 0.7f},
-
-        // === BUILDINGS BEHIND SHOWROOM (4 buildings) ===
-
-        // 5. Back-right
-        {120.0f, -75.0f, 16.0f, 14.0f, 28.0f, 0.6f, 0.6f, 0.4f},
-
-        // 6. Back-left
-        {-120.0f, -75.0f, 17.0f, 13.0f, 30.0f, 0.4f, 0.6f, 0.6f},
-
-        // 7. Back-far-right
-        {120.0f, -150.0f, 20.0f, 17.0f, 33.0f, 0.6f, 0.4f, 0.6f},
-
-        // 8. Back-far-left
-        {-120.0f, -150.0f, 19.0f, 16.0f, 31.0f, 0.5f, 0.7f, 0.5f}
+       {100.0f, 150.0f, 20.0f, 36.0f, 35.0f, 0.6f, 0.5f, 0.4f},   
+    {-100.0f, 150.0f, 18.0f, 35.0f, 32.0f, 0.5f, 0.6f, 0.5f},  
+    {100.0f, 75.0f, 25.0f, 40.0f, 40.0f, 0.7f, 0.5f, 0.5f},   
+    {-100.0f, 75.0f, 22.0f, 38.0f, 38.0f, 0.5f, 0.5f, 0.7f},   
+    {120.0f, -75.0f, 16.0f, 34.0f, 28.0f, 0.6f, 0.6f, 0.4f},   
+    {-120.0f, -75.0f, 17.0f, 33.0f, 30.0f, 0.4f, 0.6f, 0.6f},  
+    {120.0f, -150.0f, 20.0f, 37.0f, 33.0f, 0.6f, 0.4f, 0.6f},  
+    {-120.0f, -150.0f, 19.0f, 36.0f, 31.0f, 0.5f, 0.7f, 0.5f}  
     };
 
     // Calculate array size
@@ -448,7 +532,7 @@ void WorldHelper::generateBuildings(int count) {
         Building building;
 
         // Copy building data
-        building.x = fixedBuildings[i].x;
+        building.x = fixedBuildings[i].x;   
         building.z = fixedBuildings[i].z;
         building.width = fixedBuildings[i].width;
         building.depth = fixedBuildings[i].depth;
@@ -513,7 +597,7 @@ void WorldHelper::drawOutsideWorld() {
 
     for (const auto& building : buildings) {
         drawBuilding(building.x, building.z,
-            building.width, building.depth+20, building.height,
+            building.width, building.depth, building.height,
             building.r, building.g, building.b);
     }
 }
